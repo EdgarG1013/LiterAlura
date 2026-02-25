@@ -113,14 +113,16 @@ public class Principal {
         RecordLibro datos = obtenerEnlaApi();
 
         if (datos == null) {
-            System.out.println("Libro no encontrado en la API.");
+            System.out.println("------------------------------------------------");
+            System.out.println(" Libro no encontrado en la API.");
             return;
         }
 
         // Verificar si el libro ya existe en la BD
         Optional<Libro> libroExistente = libroRepository.findByTituloIgnoreCase(datos.titulo());
         if (libroExistente.isPresent()) {
-            System.out.println("El libro ya está registrado en la base de datos:");
+            System.out.println("------------------------------------------------");
+            System.out.println(" El libro ya está registrado en la base de datos:");
             System.out.println(libroExistente.get());
             return;
         }
@@ -146,17 +148,30 @@ public class Principal {
         libro.setAutores(autoresDelLibro);
         libroRepository.save(libro);
 
+        System.out.println("------------------------------------------------");
         System.out.println("Libro guardado exitosamente:");
         System.out.println(libro);
 
     }
 
     private void listarLibrosRegistrados() {
-
+        List<Libro> libros = libroRepository.findAll();
+        if (libros.isEmpty()) {
+            System.out.println("------------------------------------------------");
+            System.out.println("No hay libros registrados.");
+        } else {
+            libros.forEach(System.out::println);
+        }
     }
 
     private void listarAutoresRegistrados() {
-
+        List<Autor> autores = autorRepository.findAll();
+        if (autores.isEmpty()) {
+            System.out.println("------------------------------------------------");
+            System.out.println("No hay autores registrados.");
+        } else {
+            autores.forEach(System.out::println);
+        }
     }
 
     private void listarAutoresEntreAnio() {

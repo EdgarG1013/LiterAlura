@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "autor")
@@ -76,6 +77,7 @@ public class Autor {
                 "\nNombre: " + nombre +
                 "\nNacimiento: " + nacimiento +
                 "\nFallecimiento: " + fallecimiento +
+                "\nLibros: " + libros.stream().map(l -> l.getTitulo()).collect(Collectors.toList()) +
                 "\n----------------";
     }
 }

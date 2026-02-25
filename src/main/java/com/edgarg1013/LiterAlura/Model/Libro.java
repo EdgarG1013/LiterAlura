@@ -100,6 +100,7 @@ public class Libro {
                 "\nAutor(es): " + nombresAutores +
                 "\nIdioma: " + idioma +
                 "\nNúmero de descargas: " + numeroDescargas +
+                "\nResumen:" + resumen +
                 "\n----------------------------\n";
     }
 }

@@ -3,10 +3,10 @@ package com.edgarg1013.LiterAlura.Model;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record RecordAutor(
+import java.util.List;
 
-        @JsonAlias("name") String nombre,
-        @JsonAlias("birth_year") Integer nacimiento,
-        @JsonAlias("death_year") Integer fallecimiento ) {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record RecordRespuesta(
+
+        @JsonAlias("results") List<RecordLibro> resultados ) {
 }

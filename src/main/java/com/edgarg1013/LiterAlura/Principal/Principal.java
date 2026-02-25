@@ -1,13 +1,14 @@
 package com.edgarg1013.LiterAlura.Principal;
 
-import com.edgarg1013.LiterAlura.Model.Libro;
-import com.edgarg1013.LiterAlura.Model.RecordLibro;
+import com.edgarg1013.LiterAlura.Model.*;
 import com.edgarg1013.LiterAlura.service.ConsumoAPI;
 import com.edgarg1013.LiterAlura.service.ConvierteDatos;
-import org.springframework.beans.factory.annotation.Value;
-import com.edgarg1013.LiterAlura.Repository.gutendexRepository;
+import com.edgarg1013.LiterAlura.Repository.AutorRepository;
+import com.edgarg1013.LiterAlura.Repository.LibroRepository;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
@@ -16,10 +17,12 @@ public class Principal {
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private final String URL_BASE = "https://gutendex.com/books?";
     private ConvierteDatos conversor = new ConvierteDatos();
-    private gutendexRepository repositorio;
+    private LibroRepository libroRepository;
+    private AutorRepository autorRepository;
 
-    public Principal(gutendexRepository repositorio) {
-        this.repositorio = repositorio;
+    public Principal(LibroRepository libroRepository, AutorRepository autorRepository) {
+        this.libroRepository = libroRepository;
+        this.autorRepository = autorRepository;
     }
 
     public void muestraElMenu() {
@@ -44,7 +47,7 @@ public class Principal {
 
             System.out.println(menu);
             opcion = entrada.nextInt();
-
+            entrada.nextLine(); // consumir el salto de línea pendiente
 
             switch (opcion) {
 
@@ -74,7 +77,8 @@ public class Principal {
                     System.out.println("------------------------------------------------");
                     break;
 
-
+                default:
+                    System.out.println("Opción no válida, intente de nuevo.");
 
             }
 
@@ -89,33 +93,70 @@ public class Principal {
         System.out.println("------------------------------------------------");
 
         var nombreLibro = entrada.nextLine();
-            entrada.nextLine();
 
         // guardamos los datos de la petición a la api en la variable "json"
         var json = consumoApi.obtenerDatos(URL_BASE + "search=" + nombreLibro.replace(" ", "%20"));
 
-        // convertimos los datos de la peticion a nuestra clase de tipo record
-        RecordLibro datosLibro = conversor.obtenerDatos(json, RecordLibro.class);
+        // convertimos los datos de la peticion a nuestra clase wrapper RecordRespuesta
+        RecordRespuesta respuesta = conversor.obtenerDatos(json, RecordRespuesta.class);
 
-        return datosLibro;
+        // tomamos el primer resultado de la lista
+        if (respuesta.resultados() != null && !respuesta.resultados().isEmpty()) {
+            return respuesta.resultados().get(0);
+        }
 
+        return null;
     }
-
-
 
     private void buscarLibroPorTitulo() {
 
         RecordLibro datos = obtenerEnlaApi();
+
+        if (datos == null) {
+            System.out.println("Libro no encontrado en la API.");
+            return;
+        }
+
+        // Verificar si el libro ya existe en la BD
+        Optional<Libro> libroExistente = libroRepository.findByTituloIgnoreCase(datos.titulo());
+        if (libroExistente.isPresent()) {
+            System.out.println("El libro ya está registrado en la base de datos:");
+            System.out.println(libroExistente.get());
+            return;
+        }
+
+        // Crear el libro a partir de los datos de la API
         Libro libro = new Libro(datos);
-        repositorio.save(libro);
-        System.out.println(datos);
+
+        // Procesar autores - buscar existentes o crear nuevos
+        List<Autor> autoresDelLibro = new ArrayList<>();
+        if (datos.autores() != null) {
+            for (RecordAutor recordAutor : datos.autores()) {
+                // Buscar si el autor ya existe en la BD
+                Optional<Autor> autorExistente = autorRepository.findByNombre(recordAutor.nombre());
+                if (autorExistente.isPresent()) {
+                    autoresDelLibro.add(autorExistente.get());
+                } else {
+                    Autor nuevoAutor = new Autor(recordAutor);
+                    autoresDelLibro.add(nuevoAutor);
+                }
+            }
+        }
+
+        libro.setAutores(autoresDelLibro);
+        libroRepository.save(libro);
+
+        System.out.println("Libro guardado exitosamente:");
+        System.out.println(libro);
 
     }
 
     private void listarLibrosRegistrados() {
+
     }
 
     private void listarAutoresRegistrados() {
+
     }
 
     private void listarAutoresEntreAnio() {

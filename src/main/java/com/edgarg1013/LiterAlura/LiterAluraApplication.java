@@ -1,7 +1,8 @@
 package com.edgarg1013.LiterAlura;
 
 import com.edgarg1013.LiterAlura.Principal.Principal;
-import com.edgarg1013.LiterAlura.Repository.gutendexRepository;
+import com.edgarg1013.LiterAlura.Repository.AutorRepository;
+import com.edgarg1013.LiterAlura.Repository.LibroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,13 +17,16 @@ public class LiterAluraApplication implements CommandLineRunner {
 	}
 
     @Autowired
-    private gutendexRepository repositorio;
+    private LibroRepository libroRepository;
+
+    @Autowired
+    private AutorRepository autorRepository;
 
     @Override
     public void run(String... args) throws Exception {
 
         // llamamos a la funcion principal con el menu y los metodos
-        Principal principal = new Principal(repositorio);
+        Principal principal = new Principal(libroRepository, autorRepository);
         principal.muestraElMenu();
     }
 }

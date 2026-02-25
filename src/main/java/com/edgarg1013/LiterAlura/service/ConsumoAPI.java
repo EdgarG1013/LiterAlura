@@ -9,21 +9,33 @@ import java.net.http.HttpResponse;
 public class ConsumoAPI {
 
     public String obtenerDatos(String url){
-        HttpClient client = HttpClient.newHttpClient();
+
+   // 1. Configuramos el cliente para seguir redirecciones
+        HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build();
+
+        // 2. Agregamos el User-Agent a la petición
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .header("User-Agent", "LiterAluraApp/1.0")
                 .build();
-        HttpResponse<String> response = null;
-        try {
-            response = client
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
 
-        String json = response.body();
-        return json;
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // Verificación de seguridad
+            if (response.statusCode() != 200) {
+                System.out.println("Error en la API: Código " + response.statusCode());
+                return "";
+            }
+
+            var json = response.body();
+
+            return json;
+
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Error al conectar con la API: " + e.getMessage());
+        }
     }
 }

@@ -1,11 +1,10 @@
 package com.edgarg1013.LiterAlura.Model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
-
-
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "libro")
@@ -13,28 +12,43 @@ public class Libro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long Id;
+    private Long id;
+
+    @Column(unique = true)
     private String titulo;
     private String idioma;
     private Double numeroDescargas;
+
+    @Column(length = 2000)
     private String resumen;
-    @Transient
-    private List<Autor> autor;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "libro_autor",
+            joinColumns = @JoinColumn(name = "libro_id"),
+            inverseJoinColumns = @JoinColumn(name = "autor_id")
+    )
+    private List<Autor> autores = new ArrayList<>();
+
+    public Libro() {
+    }
 
     public Libro(RecordLibro datos) {
-
-        this.titulo = getTitulo();
-        this.idioma = getIdioma();
-        this.numeroDescargas = getNumeroDescargas();
-        this.resumen = getResumen();
-        this.autor = getAutor();
-
+        this.titulo = datos.titulo();
+        this.idioma = datos.idiomas() != null && !datos.idiomas().isEmpty()
+                ? datos.idiomas().get(0) : "Desconocido";
+        this.numeroDescargas = datos.numeroDescargas();
+        this.resumen = datos.resumenes() != null && !datos.resumenes().isEmpty()
+                ? datos.resumenes().get(0) : "";
     }
 
-    public Libro(){
-
+    public Long getId() {
+        return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getTitulo() {
         return titulo;
@@ -68,11 +82,24 @@ public class Libro {
         this.resumen = resumen;
     }
 
-    public List<Autor> getAutor() {
-        return autor;
+    public List<Autor> getAutores() {
+        return autores;
     }
 
-    public void setAutor(List<Autor> autor) {
-        this.autor = autor;
+    public void setAutores(List<Autor> autores) {
+        this.autores = autores;
+    }
+
+    @Override
+    public String toString() {
+        String nombresAutores = autores.stream()
+                .map(Autor::getNombre)
+                .collect(Collectors.joining(", "));
+        return "\n---------- LIBRO ----------" +
+                "\nTítulo: " + titulo +
+                "\nAutor(es): " + nombresAutores +
+                "\nIdioma: " + idioma +
+                "\nNúmero de descargas: " + numeroDescargas +
+                "\n----------------------------\n";
     }
 }

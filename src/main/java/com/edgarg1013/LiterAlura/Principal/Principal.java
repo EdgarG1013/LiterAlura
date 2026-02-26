@@ -175,9 +175,51 @@ public class Principal {
     }
 
     private void listarAutoresEntreAnio() {
+        System.out.println("------------------------------------------------");
+        System.out.println("   Ingrese el año para listar autores vivos");
+        System.out.println("------------------------------------------------");
+        
+        try {
+            Integer anio = entrada.nextInt();
+            entrada.nextLine(); // consumir el salto de línea pendiente
+            
+            List<Autor> autores = autorRepository.findAutoresVivosPorAnio(anio);
+            
+            if (autores.isEmpty()) {
+                System.out.println("------------------------------------------------");
+                System.out.println("No hay autores vivos en el año " + anio);
+            } else {
+                System.out.println("------------------------------------------------");
+                System.out.println("Autores vivos en el año " + anio + ":");
+                System.out.println("------------------------------------------------");
+                autores.forEach(System.out::println);
+            }
+        } catch (Exception e) {
+            System.out.println("Error: Ingrese un año válido.");
+            entrada.nextLine(); // limpiar buffer
+        }
     }
 
     private void listarLibrosPorIdioma() {
+        System.out.println("------------------------------------------------");
+        System.out.println("      Ingrese el código del idioma");
+        System.out.println("   Ejemplos: en (inglés), es (español),");
+        System.out.println("   fr (francés), de (alemán), pt (portugués)");
+        System.out.println("------------------------------------------------");
+        
+        String idioma = entrada.nextLine().toLowerCase();
+        
+        List<Libro> libros = libroRepository.findByIdioma(idioma);
+        
+        if (libros.isEmpty()) {
+            System.out.println("------------------------------------------------");
+            System.out.println("No hay libros registrados en el idioma: " + idioma);
+        } else {
+            System.out.println("------------------------------------------------");
+            System.out.println("Libros en " + idioma + ":");
+            System.out.println("------------------------------------------------");
+            libros.forEach(System.out::println);
+        }
     }
 
 }
